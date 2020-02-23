@@ -1,4 +1,4 @@
-#include "string_table.h"
+/*#include "string_table.h"
 
 namespace ink::runtime::internal
 {
@@ -81,4 +81,4 @@ namespace ink::runtime::internal
 		}
 	}
 
-}
+}*/

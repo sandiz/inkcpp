@@ -2,37 +2,38 @@
 
 #include "..//inkcpp/tree.h"
 
-using ink::runtime::internal::base_hash_tree;
-using ink::runtime::internal::hash_tree_node;
+using ink::runtime::internal::base_tree;
+using ink::runtime::internal::tree_node;
 
-struct tree_node : hash_tree_node<int>
+struct my_tree_node : tree_node<int>
 {
 	static int num_items;
 
-	tree_node(int key) : hash_tree_node<int>(key, nullptr)
+	my_tree_node(int key) : tree_node<int>(key)
 	{
 		num_items++;
 	}
-	~tree_node()
+	~my_tree_node()
 	{
 		num_items--;
 	}
 };
 
-int tree_node::num_items = 0;
+int my_tree_node::num_items = 0;
 
-class test_hash_tree : public base_hash_tree<int>
+class test_hash_tree : public base_tree<int>
 {
 public:
 	void add(int key)
 	{
-		auto node = new tree_node(key);
+		auto node = new my_tree_node(key);
 		if (!insert(node))
 			delete node;
 	}
 	void remove(int key)
 	{
-		deleteKey(key);
+		// deleteKey(key);
+		// DO NOTHING
 	}
 	int count()
 	{
@@ -55,23 +56,22 @@ SCENARIO("hash trees work", "[tree]")
 		{
 			test_hash_tree tree;
 
-			WHEN("items are added")
+			WHEN("many items are added")
 			{
-				tree.add(2);
-				tree.add(4);
-				tree.add(9);
+				for(int i = 9; i >= 0; i--)
+					tree.add(i);
 
 				THEN("they enter the tree")
 				{
-					REQUIRE(tree.count() == 3);
-					REQUIRE(tree_node::num_items == 3);
+					REQUIRE(tree.count() == 10);
+					REQUIRE(my_tree_node::num_items == 10);
 				}
 
 				THEN("they are removed")
 				{
 					tree.remove(4);
 					REQUIRE(tree.count() == 2);
-					REQUIRE(tree_node::num_items == 2);
+					REQUIRE(my_tree_node::num_items == 2);
 				}
 			}
 		}
@@ -79,7 +79,7 @@ SCENARIO("hash trees work", "[tree]")
 		{
 			THEN("all children are deleted")
 			{
-				REQUIRE(tree_node::num_items == 0);
+				REQUIRE(my_tree_node::num_items == 0);
 			}
 		}
 	}

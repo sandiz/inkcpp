@@ -5,7 +5,7 @@
 
 namespace ink::runtime::internal
 {
-	// hash tree sorted by string pointers
+	/*// hash tree sorted by string pointers
 	class string_table : public base_hash_tree<const char*>
 	{
 	public:
@@ -20,5 +20,5 @@ namespace ink::runtime::internal
 
 		// deletes all unused strings
 		void gc();
-	};
+	};*/
 }
