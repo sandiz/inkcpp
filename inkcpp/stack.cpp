@@ -216,7 +216,7 @@ namespace ink
 
 			bool basic_eval_stack::is_empty() const
 			{
-				return _pos == 0;
+				return _pos == 0 || _stack[_pos - 1].data_type() == data_type::thread_start;
 			}
 
 			void basic_eval_stack::clear()
@@ -267,6 +267,145 @@ namespace ink
 
 				// Just reset save position
 				_save = ~0;
+			}
+
+			const value thread_start = value(0, data_type::thread_start);
+
+			size_t basic_eval_stack::find_thread_start() const
+			{
+				if (_pos == 0)
+					return 0;
+
+				for (size_t i = _pos - 1; i > 0; i--)
+				{
+					// Return position right after thread start marker
+					if (_stack[i].data_type() == data_type::thread_start)
+						return i;
+
+					// Move to stored position
+					if (_stack[i].data_type() == data_type::thread_callback)
+						i = _stack[i].as_divert();
+				}
+
+				return 0;
+			}
+
+			void basic_eval_stack::thread_fork(size_t i)
+			{
+				// Get stack entry at position
+				const value& entry = _stack[i];
+				data_type type = entry.data_type();
+
+				// If we're at a thread start, we're ready. Return and let the forking begin
+				if (type == data_type::thread_start)
+					return;
+
+				// If we hit a thread callback, the stack resumes earlier
+				if (type == data_type::thread_callback)
+				{
+					// Move to where it resumes
+					thread_fork(entry.as_divert() - 1);
+					return;
+				}
+
+				// If we're not done yet
+				else if(i > 0)
+				{
+					// Recurse
+					thread_fork(i - 1);
+				}
+
+				// Don't bother copying nullified entries
+				if (entry.data_type() == data_type::none)
+					return;
+				
+				// Duplicate
+				push(entry);
+			}
+
+			void basic_eval_stack::thread_copy(size_t i, size_t& dst)
+			{
+				// Get stack entry at position
+				const value& entry = _stack[i];
+				data_type type = entry.data_type();
+
+				// If we're at a thread start, we're ready. Return and let the forking begin
+				if (type == data_type::thread_start)
+					return;
+
+				// If we hit a thread callback, the stack resumes earlier
+				if (type == data_type::thread_callback)
+				{
+					// Move to where it resumes
+					thread_copy(entry.as_divert() - 1, dst);
+					return;
+				}
+
+				// If we're not done yet
+				else if (i > 0)
+				{
+					// Recurse
+					thread_copy(i - 1, dst);
+				}
+
+				// Don't bother copying nullified entries
+				if (entry.data_type() == data_type::none)
+					return;
+
+				// Copy
+				_stack[dst++] = _stack[i];
+			}
+
+			void basic_eval_stack::thread_fork()
+			{
+				inkAssert(_save == ~0, "Threading while saved is untested!");
+
+				// Here we go. Push a new thread
+				push(thread_start);
+
+				// Fork existing thread
+				if(_pos > 2)
+					thread_fork(_pos - 2);
+			}
+
+			void basic_eval_stack::thread_resume()
+			{
+				inkAssert(_save == ~0, "Threading while saved is untested!");
+
+				// Move back to where the thread began
+				size_t start = find_thread_start();
+				_pos = start;
+
+				// TODO: Modify push/pos to respect thread shit
+				// Store largest index? That needs save restore?
+			}
+
+			void basic_eval_stack::thread_collapse(size_t saved)
+			{
+				inkAssert(_save == ~0, "Threading while saved is untested!");
+
+				// Special: clear
+				if (saved == 0)
+				{
+					_pos = 0;
+					return;
+				}
+
+				// Okay. Here we go. 
+				size_t end = 0;
+				thread_copy(saved - 1, end);
+
+				// We're not at the end
+				_pos = end;
+
+				// TODO: Max position as mentioned above?
+			}
+
+			size_t basic_eval_stack::thread_save() const
+			{
+				inkAssert(_save == ~0, "Threading while saved is untested!");
+
+				return _pos;
 			}
 
 		}

@@ -31,6 +31,9 @@ namespace ink
 				null,							// void/null (used for void function returns)
 				tunnel_frame,					// Return from tunnel
 				function_frame,					// Return from function
+
+				thread_start,					// Used to record the start of a new thread callstack
+				thread_callback,				// Used to record that this callstack is a continuation of a previous thread
 			};
 
 			// Container for any data used as part of the runtime (variable values, output streams, evaluation stack, etc.)

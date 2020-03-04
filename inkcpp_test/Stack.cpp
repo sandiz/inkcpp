@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include "..//inkcpp/simple_restorable_stack.h"
+#include "..//inkcpp/stack.h"
 
 using ink::runtime::internal::simple_restorable_stack;
 using ink::runtime::internal::restorable_stack;
@@ -217,6 +218,58 @@ SCENARIO("simple_restorable_stack supports save/restore", "[stack]") {
 				REQUIRE(stack.empty());
 			}
 
+		}
+	}
+}
+
+SCENARIO("basic_eval_stack supports threading", "[stack]")
+{
+	GIVEN("a simple stack with a few elements")
+	{
+		using namespace ink::runtime::internal;
+		
+		eval_stack<50> stack;
+		stack.push(5);
+		stack.push("brook");
+		stack.push(3.5f);
+
+		WHEN("the stack is threaded")
+		{
+			stack.thread_fork();
+
+			THEN("existing elements can be popped off")
+			{
+				REQUIRE(stack.pop() == value(3.5f));
+				REQUIRE(stack.pop() == value("brook"));
+				REQUIRE(stack.pop() == value(5));
+				REQUIRE(stack.is_empty());
+
+				THEN("they are still there when we resume")
+				{
+					stack.thread_resume();
+					REQUIRE(!stack.is_empty());
+					REQUIRE(stack.pop() == value(3.5f));
+				}
+			}
+
+			WHEN("we push elements onto the new thread")
+			{
+				stack.push(10);
+				stack.push(11);
+
+				THEN("they are not there when we resume")
+				{
+					stack.thread_resume();
+					REQUIRE(stack.pop() == value(3.5f));
+				}
+			}
+
+			/*stack.push(10);
+			size_t i = stack.thread_save();
+			stack.push(11);
+
+			stack.thread_resume();
+			stack.thread_collapse(i);*/
 		}
 	}
 }

@@ -315,6 +315,12 @@ namespace ink
 				case value_type::decimal:
 					return left.as_float() == right.as_float();
 				case value_type::string:
+					// TODO: Right now only support single element string comparison :(
+					if (left._second.type == data_type::none && right._second.type == data_type::none)
+					{
+						// TODO: cstdlib ref
+						return strcmp(left._first.string_val, right._first.string_val) == 0;
+					}
 					break; // TODO: data[] operators?
 				case value_type::divert:
 					return left.as_divert() == right.as_divert();

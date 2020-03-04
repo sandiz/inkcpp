@@ -103,10 +103,21 @@ namespace ink
 				// Garbage collection
 				void mark_strings(string_table&) const;
 
+				// == Threading ==
+				void thread_fork();
+				void thread_resume();
+				void thread_collapse(size_t saved);
+				size_t thread_save() const;
+
 				// == Save/Restore ==
 				void save();
 				void restore();
 				void forget();
+
+			private:
+				size_t find_thread_start() const;
+				void thread_fork(size_t i);
+				void thread_copy(size_t i, size_t& dst);
 
 			private:
 				// stack
