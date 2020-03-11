@@ -2,6 +2,10 @@
 
 #ifndef INK_ENABLE_UNREAL
 
+#ifdef INK_ENABLE_STL
+#include <iostream>
+#endif
+
 namespace ink
 {
 #define A 54059 /* a prime */
@@ -28,6 +32,10 @@ namespace ink
 
 	void assert(bool condition, const char* msg /*= nullptr*/)
 	{
+#ifdef INK_ENABLE_STL
+		if (!condition)
+			std::cerr << "ASSERTION FAILURE: " << msg << std::endl;
+#endif
 		if (!condition)
 			throw ink_exception(msg);
 	}

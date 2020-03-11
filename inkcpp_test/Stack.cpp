@@ -272,4 +272,62 @@ SCENARIO("basic_eval_stack supports threading", "[stack]")
 			stack.thread_collapse(i);*/
 		}
 	}
+
+	GIVEN("a stack with a 3 threads")
+	{
+		using namespace ink::runtime::internal;
+
+		eval_stack<50> stack;
+		stack.push(5);
+		stack.push("brook");
+		stack.push(3.5f);
+		auto first = stack.thread_save();
+
+		stack.thread_fork();
+		auto second = stack.thread_save();
+		stack.thread_fork();
+		auto third = stack.thread_save();
+
+		WHEN("we resume the second, push, then collapse to the third")
+		{
+			// Now in the second thread
+			stack.thread_resume();
+
+			// Push something
+			stack.push(20);
+
+			// Collapse to third stack
+			stack.thread_collapse(third);
+
+			THEN("we should have three elements")
+			{
+				REQUIRE(stack.pop() == value(3.5f));
+				REQUIRE(stack.pop() == value("brook"));
+				REQUIRE(stack.pop() == value(5));
+				REQUIRE(stack.is_empty());
+			}
+		}
+
+		WHEN("we resume the second and push")
+		{
+			// Make sure thread 3 has different values
+			stack.pop();
+			stack.push(4.5f);
+
+			// Now in the second thread
+			stack.thread_resume();
+
+			// Push something
+			stack.push(20);
+
+			THEN("we should be able to pop the second thread's values")
+			{
+				REQUIRE(stack.pop() == value(20));
+				REQUIRE(stack.pop() == value(3.5f));
+				REQUIRE(stack.pop() == value("brook"));
+				REQUIRE(stack.pop() == value(5));
+				REQUIRE(stack.is_empty());
+			}
+		}
+	}
 }

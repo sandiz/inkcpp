@@ -127,6 +127,10 @@ namespace ink
 				// Current stack position
 				size_t _pos;
 
+				// Max position (!= _pos when threading)
+				size_t _max;
+				size_t _savedMax;
+
 				// Fuck me
 				size_t _save;
 				size_t _jump;

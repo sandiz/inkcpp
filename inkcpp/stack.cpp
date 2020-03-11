@@ -172,7 +172,7 @@ namespace ink
 			}
 
 			basic_eval_stack::basic_eval_stack(value* data, size_t size)
-				: _stack(data), _size(size), _pos(0), _save(~0), _jump(~0)
+				: _stack(data), _size(size), _pos(0), _max(0), _save(~0), _jump(~0)
 			{
 
 			}
@@ -182,28 +182,67 @@ namespace ink
 				// Don't destroy saved data. Jump over it
 				if (_pos < _save && _save != ~0)
 				{
+					bool equal = _pos == _max;
 					_jump = _pos;
 					_pos = _save;
+					if (equal)
+						_max = _pos;
 				}
 
+				// Threading
+				if (_pos != _max)
+				{
+					inkAssert(_pos < _max, "How can _pos > _max???");
+					
+					// Check if we're trying to push INTO a thread on top of us
+					auto next = _stack[_pos].data_type();
+					if (next == data_type::thread_start || next == data_type::thread_callback)
+					{
+						// Push a callback onto max and move to the top
+						inkAssert(_max < _size, "Stack overflow!");
+						_stack[_max++] = value(_pos, data_type::thread_callback);
+						_pos = _max;
+					}
+				}
+
+				// Push
 				inkAssert(_pos < _size, "Stack overflow!");
 				_stack[_pos++] = val;
+
+				// Increment max only if we're moving past it
+				if(_max == _pos - 1)
+					_max = _pos;
 			}
 
 			value basic_eval_stack::pop()
 			{
-				inkAssert(_pos > 0, "Nothing left to pop!");
+				bool equal = _pos == _max;
 
 				// Jump over save data
 				if (_pos == _save)
 					_pos = _jump;
 
 				// Move over none data
-				while (_stack[_pos].is_none())
+				while (_pos > 0 && _stack[_pos - 1].is_none())
 					_pos--;
+				inkAssert(_pos > 0, "Nothing left to pop!");
+
+				// Check if we are popping a thread callback
+				data_type type = _stack[_pos - 1].data_type();
+				if (type == data_type::thread_callback)
+				{
+					// Move to where it points
+					_pos = _stack[_pos - 1].as_divert();
+					equal = false;
+				}
+				
+				inkAssert(type != data_type::thread_start, "Nothing left to pop! Popping into another thread.");
+				inkAssert(_pos > 0, "Nothing left to pop!");
 
 				// Decrement and return
 				_pos--;
+				if (equal)
+					_max = _pos;
 				return _stack[_pos];
 			}
 
@@ -222,6 +261,7 @@ namespace ink
 			void basic_eval_stack::clear()
 			{
 				_pos = 0;
+				_max = 0;
 				_jump = _save = ~0;
 			}
 
@@ -240,6 +280,7 @@ namespace ink
 
 				// Save current stack position
 				_save = _jump = _pos;
+				_savedMax = _max;
 			}
 
 			void basic_eval_stack::restore()
@@ -249,6 +290,7 @@ namespace ink
 				// Move position back to saved position
 				_pos = _save;
 				_save = _jump = ~0;
+				_max = _savedMax;
 			}
 
 			void basic_eval_stack::forget()
