@@ -48,6 +48,12 @@ namespace ink
 				// Garbage collection
 				void mark_strings(string_table&) const;
 
+				// == Threading ==
+				void thread_fork();
+				void thread_resume();
+				void thread_collapse(size_t saved);
+				size_t thread_save() const;
+
 				// == Save/Restore ==
 				void save();
 				void restore();
@@ -62,10 +68,12 @@ namespace ink
 
 				// Current stack position
 				size_t _pos;
+				size_t _max;
 
 				// Fuck me
 				size_t _save;
 				size_t _jump;
+				size_t _saveMax;
 			};
 
 			// stack for call history and temporary variables

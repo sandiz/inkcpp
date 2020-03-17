@@ -391,7 +391,7 @@ namespace ink
 				}
 
 				// Don't bother copying nullified entries
-				if (entry.data_type() == data_type::none)
+				if (type == data_type::none)
 					return;
 
 				// Copy
