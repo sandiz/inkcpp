@@ -70,15 +70,19 @@ public:
 	void OnShutdown();
 
 	// Picks a choice by index at the current branch
-	UFUNCTION(BlueprintCallable, Category="Action")
-	void PickChoice(int index);
+	UFUNCTION(BlueprintCallable, Category="Ink")
+	bool PickChoice(int index);
 
 	// Registers a callback for a named "tag function"
-	UFUNCTION(BlueprintCallable, Category="Setup")
+	UFUNCTION(BlueprintCallable, Category="Ink")
 	void RegisterTagFunction(FName functionName, const FTagFunctionDelegate& function);
 
-	UFUNCTION(BlueprintCallable, Category="Setup")
+	UFUNCTION(BlueprintCallable, Category="Ink")
 	void RegisterExternalFunction(const FString& functionName, const FExternalFunctionDelegate& function);
+	
+	UFUNCTION(BlueprintCallable, Category="Ink")
+	void RegisterExternalEvent(const FString& functionName, const FExternalFunctionVoidDelegate& function);
+	
 
 protected:
 	virtual void OnStartup_Implementation() { }

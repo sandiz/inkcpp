@@ -3,6 +3,9 @@
 #include "traits.h"
 #include "system.h"
 
+#ifdef  INK_ENABLE_UNREAL
+#include "../InkVar.h"
+#endif
 namespace ink::runtime::internal
 {
 	class basic_eval_stack;
@@ -126,19 +129,37 @@ namespace ink::runtime::internal
 		function_array_delegate(const D& del) : invocableDelegate(del) { }
 
 		// calls the underlying delegate using arguments on the stack
-		virtual void call(basic_eval_stack* stack, size_t length, string_table&) override
+		virtual void call(basic_eval_stack* stack, size_t length, string_table& strings) override
 		{
+			constexpr bool RET_VOID = 
+				is_same<typename function_traits<decltype(&D::Execute)>::return_type,
+						void>::value;
 			// Create variable array
 			TArray<FInkVar> variables;
 			for (size_t i = 0; i < length; i++)
 			{
 				variables.Add(pop<FInkVar>(stack));
 			}
-
-			FInkVar result;
-			invocableDelegate.ExecuteIfBound(variables, result);
-
-			push(stack, result);
+            if constexpr (RET_VOID)
+			{
+				invocableDelegate.Execute(variables);
+				push(stack, 0);
+			} else {
+				
+				auto ret = invocableDelegate.Execute(variables);
+				ink::runtime::value result = ret.to_value();
+				if(result.type == ink::runtime::value::Type::String) {
+					const char* src = result.v_string;
+					size_t len = string_handler<const char*>::length(src);
+					char* buffer = allocate(strings, len + 1);
+					char* ptr = buffer;
+					while(*src != '\0')
+						*(ptr++) = *(src++);
+					*ptr = 0;
+					result.v_string = buffer;
+				}
+				push(stack, result);
+			}
 		}
 	private:
 		D invocableDelegate;

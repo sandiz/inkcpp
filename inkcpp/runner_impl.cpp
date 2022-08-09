@@ -188,8 +188,8 @@ namespace ink::runtime::internal
 
 		// Iterate until we find the container marker just before our own
 		while (_story->iterate_containers(iter, container_id, offset, reverse)) {
-			if (!reverse && offset > _ptr
-					|| reverse && offset < _ptr) {
+			if (( !reverse && offset > _ptr )
+					|| ( reverse && offset < _ptr )) {
 
 				// Step back once in the iteration and break
 				inBound = true;
@@ -202,46 +202,46 @@ namespace ink::runtime::internal
 
 		bool first = true;
 		// Start moving forward (or backwards)
-		if(inBound && (offset == nullptr || !reverse&&offset<=dest || reverse&&offset>dest) )
-		while (_story->iterate_containers(iter, container_id, offset, reverse))
-		{
-			// Break when we've past the destination
-			if (!reverse && offset > dest || reverse && offset <= dest) {
-				// jump back to start of same container
-				if(first && reverse && offset == dest
-						&& _container.top() == container_id)  {
-					// check if it was start flag
-					auto con_id = container_id;
-					_story->iterate_containers(iter, container_id, offset, true);
-					if(offset == nullptr || con_id == container_id) 
-					{
-						_globals->visit(container_id);
+		if(inBound && (offset == nullptr || (!reverse&&offset<=dest) || (reverse&&offset>dest)) )
+			while (_story->iterate_containers(iter, container_id, offset, reverse))
+			{
+				// Break when we've past the destination
+				if ((!reverse && offset > dest) || (reverse && offset <= dest)) {
+					// jump back to start of same container
+					if(first && reverse && offset == dest
+							&& _container.top() == container_id)  {
+						// check if it was start flag
+						auto con_id = container_id;
+						_story->iterate_containers(iter, container_id, offset, true);
+						if(offset == nullptr || con_id == container_id) 
+						{
+							_globals->visit(container_id);
+						}
 					}
+					break;
 				}
-				break;
+				first = false;
+
+				// Two cases:
+
+				// (1) Container iterator has the same value as the top of the stack.
+				//  This means that this is an end marker for the container we're in
+				if (!_container.empty() && _container.top() == container_id)
+				{
+					if (_container.size() == pos)
+						pos--;
+
+					// Get out of that container
+					_container.pop();
+				}
+
+				// (2) This must be the entrance marker for a new container. Enter it
+				else
+				{
+					// Push it
+					_container.push(container_id);
+				}
 			}
-			first = false;
-
-			// Two cases:
-
-			// (1) Container iterator has the same value as the top of the stack.
-			//  This means that this is an end marker for the container we're in
-			if (!_container.empty() && _container.top() == container_id)
-			{
-				if (_container.size() == pos)
-					pos--;
-
-				// Get out of that container
-				_container.pop();
-			}
-
-			// (2) This must be the entrance marker for a new container. Enter it
-			else
-			{
-				// Push it
-				_container.push(container_id);
-			}
-		}
 
 		// Iterate over the container stack marking any _new_ entries as "visited"
 		if (record_visits)
@@ -364,9 +364,7 @@ namespace ink::runtime::internal
 			// Advance interpreter one line
 			advance_line();
 			// Read line into std::string
-			std::string part;
-			_output >> part;
-			result += part;
+			result += _output.get();
 			fill = _output.last_char() == ' ';
 		} while(_ptr != nullptr && _output.last_char() != '\n');
 
@@ -429,13 +427,26 @@ namespace ink::runtime::internal
 #ifdef INK_ENABLE_UNREAL
 	FString runner_impl::getline()
 	{
-		inkAssert(false, "Fix (see getline for std)");
+		clear_tags();
+		FString result{};
+		bool fill = false;
+		do {
+			if ( fill ) {
+				result += " ";
+			}
+			// Advance interpreter one line
+			advance_line();
+			// Read lin ve into std::string
+			const char* str = _output.get_alloc(_globals->strings(), _globals->lists());
+			result.Append( str, c_str_len( str ) );
+			fill = _output.last_char() == ' ';
+		} while ( _ptr != nullptr && _output.last_char() != '\n' );
 
-		// Read line into std::string
-		FString result;
+		// TODO: fallback choice = no choice
+		if ( !has_choices() && _fallback_choice ) { choose( ~0 ); }
 
 		// Return result
-		inkAssert(_output.is_empty(), "Output should be empty after getline!");
+		inkAssert( _output.is_empty(), "Output should be empty after getline!" );
 		return result;
 	}
 #endif
@@ -526,7 +537,7 @@ namespace ink::runtime::internal
 	char* runner_impl::getline_alloc()
 	{                                         
 		/// TODO
-		inkAssert(false, "Not implemented yet!");
+		inkFail("Not implemented yet!");
 		return nullptr;
 	}
 #endif
@@ -576,6 +587,7 @@ namespace ink::runtime::internal
 			return change_type::extended_past_newline;
 
 		inkFail("Invalid change detction. Never should be here!");
+		return change_type::no_change;
 	}
 
 	bool runner_impl::line_step()
@@ -700,7 +712,7 @@ namespace ink::runtime::internal
 				if(bEvaluationMode) {
 					_eval.push(value{}.set<value_type::value_pointer>(val, static_cast<char>(flag) - 1));
 				} else {
-					throw ink_exception("never conciderd what should happend here! (value pointer print)");
+					inkFail("never conciderd what should happend here! (value pointer print)");
 				}
 			}
 			break;

@@ -30,8 +30,6 @@ AInkRuntime::~AInkRuntime()
 // Called when the game starts or when spawned
 void AInkRuntime::BeginPlay()
 {
-	Super::BeginPlay();
-
 	// Create the CPU for the story
 	if (InkAsset != nullptr)
 	{
@@ -41,11 +39,15 @@ void AInkRuntime::BeginPlay()
 
 		// create globals
 		mpGlobals = mpRuntime->new_globals();
+		// initialize globals
+		mpRuntime->new_runner(mpGlobals);
 	}
 	else
 	{
 		UE_LOG(InkCpp, Warning, TEXT("No story asset assigned."));
 	}
+	
+	Super::BeginPlay();
 }
 
 // Called every frame
@@ -119,8 +121,10 @@ void AInkRuntime::RegisterTagFunction(FName functionName, const FTagFunctionDele
 
 UInkThread* AInkRuntime::Start(TSubclassOf<class UInkThread> type, FString path, bool startImmediately)
 {
+	UE_LOG(InkCpp, Display, TEXT("Start"));
 	if (mpRuntime == nullptr || type == nullptr)
 	{
+		UE_LOG(InkCpp, Warning, TEXT("failed to start"));
 		return nullptr;
 	}
 
@@ -135,6 +139,7 @@ UInkThread* AInkRuntime::StartExisting(UInkThread* thread, FString path, bool st
 {
 	if (mpRuntime == nullptr)
 	{
+		UE_LOG(InkCpp, Warning, TEXT("Failed to start existing"));
 		return nullptr;
 	}
 
@@ -177,13 +182,26 @@ void AInkRuntime::PopExclusiveThread(UInkThread* Thread)
 	mExclusiveStack.Remove(Thread);
 }
 
-void AInkRuntime::GetGlobalVariable(const FString& name, FInkVar& value) const {
+FInkVar AInkRuntime::GetGlobalVariable(const FString& name) {
 	ink::optional<ink::value> var = mpGlobals->get<ink::value>(TCHAR_TO_ANSI(*name));
-	inkAssert(var, "Reguested variable does not exists!");
-	if(var) { value = *var; }
+	if(var) { return FInkVar(*var); }
+	else { UE_LOG(InkCpp, Warning, TEXT("Failed to find global variable with name: %s"), *name); }
+	return FInkVar{};
 }
 
 void AInkRuntime::SetGlobalVariable(const FString& name, const FInkVar& value) {
 	bool success = mpGlobals->set<ink::value>(TCHAR_TO_ANSI(*name), value.to_value());
-	inkAssert(success, "Unable to set variable");
+	if(!success) {
+		UE_LOG(InkCpp, Warning, TEXT("Filed to set global variable with name: %s"), *name);
+		ink::optional<ink::value> var = mpGlobals->get<ink::value>(TCHAR_TO_ANSI(*name));
+		if(var) {
+			UE_LOG(InkCpp, Warning, 
+				TEXT("Reason: wrong type!, got: %i, expected: %i"),
+				static_cast<int>(value.to_value().type),
+				static_cast<int>(var->type) );
+		} else {
+			UE_LOG(InkCpp, Warning, TEXT("Reason: no variable with this name exists! '%s'"),
+				*name);
+		}
+	}
 }

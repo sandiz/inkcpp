@@ -275,6 +275,7 @@ namespace ink
 								break;
 							case value_type::list_flag:
 								length += lists.stringLen(_data[i].get<value_type::list_flag>());
+								break;
 							default: length += value_length(_data[i]);
 						}
 					}
@@ -315,7 +316,7 @@ namespace ink
 					case value_type::list_flag:
 						ptr = lists.toString(ptr, _data[i].get<value_type::list>());
 						break;
-					default: throw ink_exception("cant convert expression to string!");
+					default: inkFail("cant convert expression to string!");
 					}
 				}
 
@@ -326,7 +327,7 @@ namespace ink
 				_size = start;
 
 				// Return processed string
-				end = clean_string<false,false>(buffer, buffer+length);
+				end = clean_string<true, false>(buffer, buffer + c_str_len(buffer));
 				*end = 0;
 				_last_char = end[-1];
 				if constexpr (RemoveTail) {

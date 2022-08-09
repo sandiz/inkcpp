@@ -92,7 +92,7 @@ namespace ink::runtime::internal
 	}
 	bool value::set( const ink::runtime::value& val ) {
 		auto var = value( val );
-		if ( var.type() == type() ) {
+		if ( type() == value_type::none || var.type() == type() ) {
 			*this = var;
 			return true;
 		}
@@ -106,5 +106,6 @@ namespace ink::runtime::internal
 		else if(type() == value_type::string) { return val(get<value_type::string>().str); }
 		else if(type() == value_type::float32) { return val(get<value_type::float32>()); }
 		inkFail("No valid type to convert to interface value!");
+		return val();
 	}
 }

@@ -12,9 +12,7 @@
 #include "Internationalization/Regex.h"
 
 UInkThread::UInkThread() : mbHasRun(false), mnChoiceToChoose(-1), mnYieldCounter(0), mbKill(false) { }
-UInkThread::~UInkThread() {
-	delete mpTags;
-}
+UInkThread::~UInkThread() {}
 void UInkThread::Yield()
 {
 	mnYieldCounter++;
@@ -37,6 +35,11 @@ void UInkThread::RegisterTagFunction(FName functionName, const FTagFunctionDeleg
 }
 
 void UInkThread::RegisterExternalFunction(const FString& functionName, const FExternalFunctionDelegate& function)
+{
+	mpRunner->bind_delegate(ink::hash_string(TCHAR_TO_ANSI(*functionName)), function);
+}
+
+void UInkThread::RegisterExternalEvent(const FString& functionName, const FExternalFunctionVoidDelegate& function)
 {
 	mpRunner->bind_delegate(ink::hash_string(TCHAR_TO_ANSI(*functionName)), function);
 }
@@ -93,13 +96,12 @@ bool UInkThread::ExecuteInternal()
 		{
 			// Handle text
 			FString line = mpRunner->getline();
-
 			// Special: Line begins with >> marker
 			if (line.StartsWith(TEXT(">>")))
 			{
 				// This is a special version of the tag function call
 				// Expected: >> MyTagFunction(Arg1, Arg2, Arg3)
-				FRegexPattern pattern = FRegexPattern(TEXT("^>>\\s*(\\w+)\\s*(\\((([\\w ]+)(,\\s*([\\w ]+))*)?\\))?$"));
+				FRegexPattern pattern = FRegexPattern(TEXT("^>>\\s*(\\w+)(\\((\\s*(\\w+)\\s*(,\\s*(\\w+)\\s*)*)?\\))?$"));
 				FRegexMatcher matcher = FRegexMatcher(pattern, line);
 				if (matcher.FindNext())
 				{
@@ -212,10 +214,18 @@ bool UInkThread::Execute()
 	return finished;
 }
 
-void UInkThread::PickChoice(int index)
+bool UInkThread::PickChoice(int index)
 {
+	if (index >= mCurrentChoices.Num()) {
+		UE_LOG(InkCpp, Warning,
+			TEXT("PickChoice: index(%i) out of range [0-%i)"),
+				index,
+				mCurrentChoices.Num());
+		return false;
+	}
 	mnChoiceToChoose = index;
 	mbInChoice = false;
+	return true;
 }
 
 bool UInkThread::CanExecute() const
