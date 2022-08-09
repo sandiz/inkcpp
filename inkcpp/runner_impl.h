@@ -52,8 +52,11 @@ namespace ink::runtime::internal
 		void getline_silent();
 
 		virtual bool has_tags() const override;
+		virtual bool has_line_tags() const override;
 		virtual size_t num_tags() const override;
+		virtual size_t num_line_tags() const override;
 		virtual const char* get_tag(size_t index) const override;
+		virtual const char* get_line_tag(size_t index) const override;
 
 
 #ifdef INK_ENABLE_CSTD
@@ -130,6 +133,7 @@ namespace ink::runtime::internal
 		void clear_choices();
 
 		void clear_tags();
+		void clear_line_tags();
 
 		// Special code for jumping from the current IP to another
 		void jump(ip_t, bool record_visits = true);
@@ -235,6 +239,7 @@ namespace ink::runtime::internal
 
 		// Tag list
 		managed_array<const char*, config::limitActiveTags < 0, abs(config::limitActiveTags)> _tags;
+		managed_array<const char*, config::limitActiveTags < 0, abs(config::limitActiveTags)> _line_tags;
 
 		// TODO: Move to story? Both?
 		functions _functions;

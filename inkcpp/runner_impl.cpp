@@ -165,6 +165,11 @@ namespace ink::runtime::internal
 		_tags.clear();
 	}
 
+	void runner_impl::clear_line_tags()
+	{
+		_line_tags.clear();
+	}
+
 	void runner_impl::jump(ip_t dest, bool record_visits)
 	{
 		// Optimization: if we are _is_falling, then we can
@@ -458,7 +463,10 @@ namespace ink::runtime::internal
 		{
 			// Stop if we hit a new line
 			if (line_step())
+			{
+				_line_tags.clear();
 				break;
+			}
 		}
 
 		// can be in save state becaues of choice
@@ -508,6 +516,7 @@ namespace ink::runtime::internal
 		if(!_container.empty()){ _globals->visit(_container.top()); }
 		clear_choices();
 		clear_tags();
+		clear_line_tags();
 	}
 
 	void runner_impl::getline_silent()
@@ -522,15 +531,32 @@ namespace ink::runtime::internal
 		return _tags.size() > 0;
 	}
 
+	bool runner_impl::has_line_tags() const
+	{
+		return _line_tags.size() > 0;
+	}
+
 	size_t runner_impl::num_tags() const
 	{
 		return _tags.size();
 	}
 
+	size_t runner_impl::num_line_tags() const
+	{
+		return _line_tags.size();
+	}
+	
+
 	const char* runner_impl::get_tag(size_t index) const
 	{
 		inkAssert(index < _tags.size(), "Tag index exceeds _num_tags");
 		return _tags[index];
+	}
+
+	const char* runner_impl::get_line_tag(size_t index) const
+	{
+		inkAssert(index < _line_tags.size(), "Tag index exceeds _num_line_tags");
+		return _line_tags[index];
 	}
 
 #ifdef INK_ENABLE_CSTD
@@ -1135,7 +1161,9 @@ namespace ink::runtime::internal
 			} break;
 			case Command::TAG:
 			{
-				_tags.push() = read<const char*>();
+				auto data = read<const char*>();
+				_tags.push() = data;
+				_line_tags.push() = data;
 			} break;
 			default:
 				inkAssert(false, "Unrecognized command!");
