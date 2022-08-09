@@ -56,6 +56,36 @@ namespace ink::compiler::internal
 		return _stream;
 	}
 
+	std::ostream& reporter::allknots()
+	{
+		if (_results != nullptr)
+		{
+			_buffer.start(&_results->_all_knots);
+		}
+
+		return _stream;
+	}
+
+	std::ostream& reporter::allstitches()
+	{
+		if (_results != nullptr)
+		{
+			_buffer.start(&_results->_all_stitches);
+		}
+		
+		return _stream;
+	}
+
+	std::ostream& reporter::allvars()
+	{
+		if (_results != nullptr)
+		{
+			_buffer.start(&_results->_all_globals);
+		}
+
+		return _stream;
+	}
+
 	void error_strbuf::start(error_list* list)
 	{
 		// store list

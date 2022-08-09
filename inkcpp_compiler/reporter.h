@@ -41,6 +41,12 @@ namespace ink::compiler::internal
 		
 		// report critical error
 		std::ostream& crit();
+
+		std::ostream& allvars();
+
+		std::ostream& allknots();
+
+		std::ostream& allstitches();
 	private:
 		compilation_results* _results;
 		error_strbuf _buffer;

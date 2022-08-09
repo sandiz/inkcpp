@@ -22,7 +22,9 @@ namespace ink::compiler::internal
 		// compile from json using an emitter
 		void compile(const nlohmann::json& input, emitter* output, compilation_results* results = nullptr);
 
-	private: // == Compiler methods ==
+	private:
+		void compile_metadata(const nlohmann::json& meta, compilation_results* results);
+		// == Compiler methods ==
 		void handle_container_metadata(const nlohmann::json& meta, container_meta& data);
 		void compile_container(const nlohmann::json& container, int index_in_parent, const std::string& name_override = "");
 		void compile_command(const std::string& command);
@@ -48,6 +50,7 @@ namespace ink::compiler::internal
 
 	private: // == Private members ==
 		emitter* _emitter;
+		compilation_results* _results;
 		container_t _next_container_index;
 
 		list_data _list_meta;

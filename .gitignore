@@ -17,3 +17,5 @@ Build/*
 build/*
 bin/
 Bin/
+.vs/
+out/

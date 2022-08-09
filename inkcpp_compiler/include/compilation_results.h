@@ -12,5 +12,9 @@ namespace ink::compiler
 	{
 		error_list warnings;
 		error_list errors;
+
+		std::vector<std::string> _all_knots;
+		std::vector<std::string> _all_stitches;
+		std::vector<std::string> _all_globals;
 	};
 }
