@@ -2,18 +2,18 @@
 include(FetchContent)
 set(CMAKE_TLS_VERIFY true)
 FetchContent_Declare(inklecate_mac
-URL https://github.com/inkle/ink/releases/download/v1.0.0/inklecate_mac.zip
-URL_HASH SHA256=B6F4DD1F95C180637CE193DBB5FA6D59AEAFE49A2121A05B7822E6CBBAA6931F
+URL https://github.com/sandiz/ink/releases/download/v1.0.0/inklecate_mac.zip
+URL_HASH SHA256=90834C86D407FFCC6596C106BB92E0C36C7DDB5CC32095E0CD21FC0DE174F79E
 SOURCE_DIR "inkcpp/Resources/inklecate/mac"
 )
 FetchContent_Declare(inklecate_windows
-URL https://github.com/inkle/ink/releases/download/v1.0.0/inklecate_windows.zip
-URL_HASH SHA256=A93A5E03109FBD92C636374132253D6D1AEF62B3E060A7FD8CAB97DA883A8327
+URL https://github.com/sandiz/ink/releases/download/v1.0.0/inklecate_win.zip
+URL_HASH SHA256=1112531ED43222DDF4618391F384F2AAF75E24B748DDB23767CD1F0FAA50137F
 SOURCE_DIR "inkcpp/Resources/inklecate/windows"
 )
 FetchContent_Declare(inklecate_linux
-URL https://github.com/inkle/ink/releases/download/v1.0.0/inklecate_linux.zip
-URL_HASH SHA256=6E17DB766222998BA0AE5A5DA9857E34896E683B9EC42FAD528C3F8BEA7398EA
+URL https://github.com/sandiz/ink/releases/download/v1.0.0/inklecate_linux.zip
+URL_HASH SHA256=A7E4463E930AF241E5EAC916DC2601D131D9F6541362FDC823A245CC6C64B1F3
 SOURCE_DIR "inkcpp/Resources/inklecate/linux"
 )
 set(INKLECATE_CMD "")
