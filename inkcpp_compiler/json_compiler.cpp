@@ -21,9 +21,11 @@ namespace ink::compiler::internal
 		// Get the runtime version
 		int inkVersion = input["inkVersion"];
 		// TODO: Do something with version number
-		compile_metadata(input["stats"], results);
+		
 		// Start the output
 		set_results(results);
+		_results = results;
+		compile_metadata(input["stats"]);
 		_emitter = output;
 
 		// Initialize emitter
@@ -54,32 +56,33 @@ namespace ink::compiler::internal
 	};
 
 	void json_compiler::compile_metadata(
-		const json& meta, compilation_results* results)
+		const json& meta)
 	{
-		if (meta.is_object())
+		if (meta.is_object() && _results)
 		{
 			auto knots = meta["allknots"];
 			if (knots.is_array())
 			{
-				std::cout << "Knots: ";
+				//std::cout << "Knots: ";
 				for (auto& iter : knots.items())
 				{
-					//results->_all_knots.push_back(iter.value());
-					allknots() << iter.value();
-					std::cout << iter.value() << ", ";
+					_results->_all_knots.push_back(iter.value());
+					// allknots() << iter.value();
+					//std::cout << iter.value() << ", ";
 				}
-				std::cout << std::endl;
+				//std::cout << std::endl;
 			}
 			auto stitches = meta["allstitches"];
 			if (stitches.is_array())
 			{
-				std::cout << "Stitches: ";
+				//std::cout << "Stitches: ";
 				for (auto& iter : stitches.items())
 				{
-					allstitches() << iter.value();
-					std::cout << iter.value() << ", ";
+					_results->_all_stitches.push_back(iter.value());
+					//allstitches() << iter.value();
+					//std::cout << iter.value() << ", ";
 				}
-				std::cout << std::endl;
+				//std::cout << std::endl;
 			}
 		}
 	}
@@ -338,9 +341,10 @@ namespace ink::compiler::internal
 			_emitter->write_variable(Command::SET_VARIABLE,
 				is_redef ? CommandFlag::ASSIGNMENT_IS_REDEFINE : CommandFlag::NO_FLAGS,
 				val);
-			//results->_all_globals.push_back(val);
-			allvars() << val;
-			std::cout << "Variable: " << val << std::endl;
+			if(_results)
+				_results->_all_globals.push_back(val);
+			//allvars() << val;
+			//std::cout << "Variable: " << val << std::endl;
 		}
 
 		// create pointer value

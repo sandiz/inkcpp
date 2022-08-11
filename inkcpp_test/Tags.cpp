@@ -9,6 +9,25 @@
 
 using namespace ink::runtime;
 
+void HandleLine(ink::runtime::runner thread2, std::string line)
+{
+	std::cout << std::endl;
+	std::cout << line << std::endl;
+	std::cout << "line tags: " << thread2->num_line_tags() << " all tags: " << thread2->num_tags();
+	std::cout << " line tags: ";
+	for (int i = 0; i < thread2->num_line_tags(); i++)
+	{
+		std::cout << thread2->get_line_tag(i) << " ";
+	}
+	std::cout << " alltags: ";
+	for (int i = 0; i < thread2->num_tags(); i++)
+	{
+		std::cout << thread2->get_tag(i) << " ";
+	}
+	std::cout << std::endl;
+}
+
+
 SCENARIO("run story with tags", "[tags]")
 {
 	GIVEN("a story with tags")
@@ -91,6 +110,54 @@ SCENARIO("run story with tags", "[tags]")
 					}
 				}
 			}
+		}
+	}
+}
+SCENARIO("line tags test")
+{
+	GIVEN("story with line tags")
+	{
+		inklecate("ink/TagsStory2.ink", "TagsStory2.tmp");
+		ink::compiler::run("TagsStory2.tmp", "TagsStory2.bin");
+		auto ink = story::from_file("TagsStory2.bin");
+		runner thread2 = ink->new_runner();
+		WHEN("start thread2")
+		{
+			THEN("moveto")
+			{
+				auto ret = thread2->move_to(ink::hash_string("knot3"));
+				REQUIRE(thread2->has_tags() == false);
+				REQUIRE(ret == true);
+			}
+			WHEN("first line")
+			{
+				std::string line = thread2->getline();
+				HandleLine(thread2, line);
+				REQUIRE(thread2->num_line_tags() == 3);
+				REQUIRE(std::string(thread2->get_line_tag(0)) == "tag1");
+				REQUIRE(std::string(thread2->get_line_tag(1)) == "t2");
+				REQUIRE(std::string(thread2->get_line_tag(2)) == "t3");
+				
+				THEN("second line")
+				{
+					std::string line = thread2->getline();
+					HandleLine(thread2, line);
+					REQUIRE(thread2->num_line_tags() == 2);
+					REQUIRE(std::string(thread2->get_line_tag(0)) == "t4");
+					REQUIRE(std::string(thread2->get_line_tag(1)) == "t5");
+					
+					THEN("third line")
+					{
+						std::string line = thread2->getline();
+						HandleLine(thread2, line);
+						REQUIRE(thread2->num_line_tags() == 2);
+						REQUIRE(std::string(thread2->get_line_tag(0)) == "t6");
+						REQUIRE(std::string(thread2->get_line_tag(1)) == "t7");
+
+					}
+				}
+			}
+			
 		}
 	}
 }

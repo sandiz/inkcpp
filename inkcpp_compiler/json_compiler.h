@@ -23,7 +23,7 @@ namespace ink::compiler::internal
 		void compile(const nlohmann::json& input, emitter* output, compilation_results* results = nullptr);
 
 	private:
-		void compile_metadata(const nlohmann::json& meta, compilation_results* results);
+		void compile_metadata(const nlohmann::json& meta);
 		// == Compiler methods ==
 		void handle_container_metadata(const nlohmann::json& meta, container_meta& data);
 		void compile_container(const nlohmann::json& container, int index_in_parent, const std::string& name_override = "");

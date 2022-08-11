@@ -360,6 +360,7 @@ namespace ink::runtime::internal
 #ifdef INK_ENABLE_STL
 	std::string runner_impl::getline()
 	{
+		clear_line_tags();
 		std::string result{""};
 		bool fill = false;
 		do {
@@ -464,7 +465,7 @@ namespace ink::runtime::internal
 			// Stop if we hit a new line
 			if (line_step())
 			{
-				_line_tags.clear();
+				//_line_tags.clear();
 				break;
 			}
 		}

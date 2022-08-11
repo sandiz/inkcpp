@@ -57,7 +57,7 @@ namespace ink::runtime::internal
 		virtual size_t num_line_tags() const override;
 		virtual const char* get_tag(size_t index) const override;
 		virtual const char* get_line_tag(size_t index) const override;
-
+		virtual void clear_line_tags() override;
 
 #ifdef INK_ENABLE_CSTD
 		// c-style getline
@@ -79,6 +79,7 @@ namespace ink::runtime::internal
 
 		// get all into stream
 		virtual void getall(std::ostream&) override;
+
 #endif
 #ifdef INK_ENABLE_UNREAL
 		// Reads a line into an Unreal FString
@@ -133,7 +134,7 @@ namespace ink::runtime::internal
 		void clear_choices();
 
 		void clear_tags();
-		void clear_line_tags();
+		
 
 		// Special code for jumping from the current IP to another
 		void jump(ip_t, bool record_visits = true);

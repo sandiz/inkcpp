@@ -155,6 +155,7 @@ namespace ink::runtime
 		virtual bool has_line_tags() const = 0;
 		virtual size_t num_line_tags() const = 0;
 		virtual const char* get_line_tag(size_t index) const = 0;
+		virtual void clear_line_tags() = 0;
 
 	protected:
 		// internal bind implementation. not for calling.

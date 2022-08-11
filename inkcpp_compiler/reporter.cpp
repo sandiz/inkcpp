@@ -60,7 +60,7 @@ namespace ink::compiler::internal
 	{
 		if (_results != nullptr)
 		{
-			_buffer.start(&_results->_all_knots);
+			//_buffer.start(&_results->_all_knots);
 		}
 
 		return _stream;
@@ -70,7 +70,7 @@ namespace ink::compiler::internal
 	{
 		if (_results != nullptr)
 		{
-			_buffer.start(&_results->_all_stitches);
+			//_buffer.start(&_results->_all_stitches);
 		}
 		
 		return _stream;
@@ -80,7 +80,7 @@ namespace ink::compiler::internal
 	{
 		if (_results != nullptr)
 		{
-			_buffer.start(&_results->_all_globals);
+			//_buffer.start(&_results->_all_globals);
 		}
 
 		return _stream;
