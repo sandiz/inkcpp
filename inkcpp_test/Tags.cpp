@@ -113,6 +113,7 @@ SCENARIO("run story with tags", "[tags]")
 		}
 	}
 }
+/*
 SCENARIO("line tags test")
 {
 	GIVEN("story with line tags")
@@ -159,5 +160,49 @@ SCENARIO("line tags test")
 			}
 			
 		}
+	}
+}
+*/
+
+SCENARIO("ahf test cases")
+{
+	GIVEN("basic knot")
+	{
+		inklecate("ink/AHF.ink", "AHF.tmp");
+		ink::compiler::run("AHF.tmp", "AHFStory.bin");
+		auto ink = story::from_file("AHFStory.bin");
+		runner thread = ink->new_runner();
+		thread->move_to(ink::hash_string("test_knot1"));
+		do
+		{
+			auto line = thread->getline();
+			std::cout << "line: " << line << std::endl;
+		} while (thread->can_continue());
+		REQUIRE(thread->can_continue() == false);
+		/*
+		thread->move_to(ink::hash_string("test_tweet1"));
+		do
+		{
+			auto line = thread->getline();
+			std::cout << "line: " << line << std::endl;
+		} while (thread->can_continue());
+		REQUIRE(thread->can_continue() == false);
+
+		thread->move_to(ink::hash_string("test_tweet2"));
+		do
+		{
+			auto line = thread->getline();
+			std::cout << "line: " << line << std::endl;
+		} while (thread->can_continue());
+		REQUIRE(thread->can_continue() == false);
+
+		thread->move_to(ink::hash_string("test_tweet3"));
+		do
+		{
+			auto line = thread->getline();
+			std::cout << "line: " << line << std::endl;
+		} while (thread->can_continue());
+		REQUIRE(thread->can_continue() == false);
+		*/
 	}
 }
