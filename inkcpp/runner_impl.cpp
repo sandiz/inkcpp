@@ -167,7 +167,7 @@ namespace ink::runtime::internal
 
 	void runner_impl::clear_line_tags()
 	{
-		//_line_tags.clear();
+		_line_tags.clear();
 	}
 
 	void runner_impl::jump(ip_t dest, bool record_visits)
@@ -1164,7 +1164,7 @@ namespace ink::runtime::internal
 			{
 				auto data = read<const char*>();
 				_tags.push() = data;
-				//_line_tags.push() = data;
+				_line_tags.push() = data;
 			} break;
 			default:
 				inkAssert(false, "Unrecognized command!");
