@@ -2,6 +2,7 @@
 
 #include "system.h"
 #include "array.h"
+#include "snapshot_impl.h"
 
 #ifdef INK_ENABLE_STL
 #include <iosfwd>
@@ -24,7 +25,7 @@ namespace ink::runtime::internal
 	}
 
 	/// managed all list entries and list metadata
-	class list_table
+	class list_table : public snapshot_interface 
 	{
 		using data_t = int;
 		enum class state : char {
@@ -63,7 +64,7 @@ namespace ink::runtime::internal
 
 		// parse binary list meta data
 		list_table(const char* data, const ink::internal::header&);
-		explicit list_table() : _valid{false} {}
+		explicit list_table() : _entrySize{0}, _valid{ false } {}
 		size_t stringLen(const list_flag& e) const;
 		const char* toString(const list_flag& e) const;
 
@@ -76,6 +77,10 @@ namespace ink::runtime::internal
 		 * @return pointer to end of insierted string
 		 */
 		char* toString(char* out, const list& l) const;
+
+		// snapshot interface implementation
+		size_t snap(unsigned char* data, const snapper&) const override;
+		const unsigned char* snap_load(const unsigned char* data, const loader&) override;
 
 		/** special traitment when a list get assignet again
 		 * when a list get assigned and would have no origin, it gets the origin of the base with origin
@@ -153,10 +158,10 @@ namespace ink::runtime::internal
 			return lid == 0 ? 0 : _list_end[lid-1];
 		}
 		const data_t* getPtr(int eid) const {
-			return _data.begin() + _entrySize * eid;
+			return _data.begin() + static_cast<std::ptrdiff_t>(_entrySize) * static_cast<std::ptrdiff_t>(eid);
 		}
 		data_t* getPtr(int eid)	 {
-			return _data.begin() + _entrySize * eid;
+			return _data.begin() + static_cast<std::ptrdiff_t>(_entrySize) * static_cast<std::ptrdiff_t>(eid);
 		}
 		int numFlags() const {
 			return _flag_names.size();
