@@ -4,18 +4,18 @@ endif()
 include(FetchContent)
 set(CMAKE_TLS_VERIFY true)
 FetchContent_Declare(inklecate_mac
-URL https://github.com/sandiz/ink/releases/download/v1.0.0/inklecate_mac.zip
-URL_HASH SHA256=90834C86D407FFCC6596C106BB92E0C36C7DDB5CC32095E0CD21FC0DE174F79E
+URL https://github.com/sandiz/ink/releases/download/v1.0.1/inklecate_mac.zip
+URL_HASH SHA256=5eea97568e9d6eeb682240b86cb3173f807134da53d8fb1e24c8cf9faf08cabb
 SOURCE_DIR "inkcpp/Resources/inklecate/mac"
 )
 FetchContent_Declare(inklecate_windows
-URL https://github.com/sandiz/ink/releases/download/v1.0.0/inklecate_win.zip
-URL_HASH SHA256=1112531ED43222DDF4618391F384F2AAF75E24B748DDB23767CD1F0FAA50137F
+URL https://github.com/sandiz/ink/releases/download/v1.0.1/inklecate_win.zip
+URL_HASH SHA256=404af7e6205b4625a69ac1451d5da2364760a98268bf0c4dc1e56d31ba48c6e6
 SOURCE_DIR "inkcpp/Resources/inklecate/windows"
 )
 FetchContent_Declare(inklecate_linux
-URL https://github.com/sandiz/ink/releases/download/v1.0.0/inklecate_linux.zip
-URL_HASH SHA256=A7E4463E930AF241E5EAC916DC2601D131D9F6541362FDC823A245CC6C64B1F3
+URL https://github.com/sandiz/ink/releases/download/v1.0.1/inklecate_linux.zip
+URL_HASH SHA256=d672a0ff5b9d93bc62d76bbfe3b7e14fe282ab87c9b5cdb33687b0a8db22d042
 SOURCE_DIR "inkcpp/Resources/inklecate/linux"
 )
 set(INKLECATE_CMD "")
@@ -29,7 +29,7 @@ if(WIN32)
 	endif()
 elseif(APPLE)
 	FetchContent_MakeAvailable(inklecate_mac)
-	if(NOT inklecate_mac_SOURCE_DIRE)
+	if(NOT inklecate_mac_SOURCE_DIR)
 		message(WARNING "failed to downloawd inklecate for MacOS, "
 			"the unreal plugin will be unable use a .ink file as asset directly")
 	else()
