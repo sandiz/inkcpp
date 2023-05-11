@@ -28,6 +28,19 @@ void HandleLine(ink::runtime::runner thread2, std::string line)
 }
 
 
+SCENARIO("tags", "[tags]")
+{
+	inklecate("ink/AHF.ink", "AHF.tmp");
+	ink::compiler::run("AHF.tmp", "AHF.bin");
+	auto ink = story::from_file("AHF.bin");
+	runner thread = ink->new_runner();
+	thread->move_to(ink::hash_string("test_knot"));
+	while(thread->can_continue()) {
+		auto line = thread->getline();
+	}
+	REQUIRE(thread->can_continue() == false);
+}
+
 SCENARIO("run story with tags", "[tags]")
 {
 	GIVEN("a story with tags")

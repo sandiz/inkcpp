@@ -35,9 +35,11 @@ namespace ink::runtime::internal
 		virtual ~runner_impl();
 
 		// used by the globals object to do garbage collection
-		void mark_strings(string_table&) const;
+		void mark_used(string_table&, list_table&) const;
 
 #pragma region runner Implementation
+		// sets seed for prng in runner
+		virtual void set_rng_seed(uint32_t seed) override { _rng.srand(seed); }
 
 		// Checks that the runner can continue
 		virtual bool can_continue() const override;
@@ -264,7 +266,7 @@ namespace ink::runtime::internal
 
 		bool _saved = false;
 
-		prng _rng{};
+		prng _rng;
 	};
 
 	template<bool dynamic, size_t N>

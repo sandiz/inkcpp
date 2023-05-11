@@ -117,7 +117,7 @@ namespace ink::runtime::internal
 	optional<ink::runtime::value> globals_impl::get_var(hash_t name) const {
 		auto* var = get_variable(name);
 		if (!var) { return nullopt; }
-		return {var->to_interface_value()};
+		return {var->to_interface_value(_lists)};
 	}
 	
 	bool globals_impl::set_var(hash_t name, const ink::runtime::value& val) {
@@ -160,20 +160,22 @@ namespace ink::runtime::internal
 	{
 		// Mark all strings as unused
 		_strings.clear_usage();
+		_lists.clear_usage();
 
 		// Iterate runners and mark their strings
 		auto iter = _runners_start;
 		while (iter != nullptr)
 		{
-			iter->object->mark_strings(_strings);
+			iter->object->mark_used(_strings, _lists);
 			iter = iter->next;
 		}
 
 		// Mark our own strings
-		_variables.mark_strings(_strings);
+		_variables.mark_used(_strings, _lists);
 
 		// run garbage collection
 		_strings.gc();
+		_lists.gc();
 	}
 
 	void globals_impl::save()

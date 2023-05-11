@@ -124,4 +124,17 @@ namespace ink::runtime
 	inline bool globals_interface::set<const char*>(const char* name, const char* const& val) {
 		return set_var(hash_string(name), value(val));
 	}
+
+	template<>
+	inline optional<list> globals_interface::get<list>(const char* name) const {
+		auto var = get_var(hash_string(name));
+		if (var && var->type == value::Type::List) {
+			return {var->v_list};
+		}
+		return nullopt;
+	}
+	template<>
+	inline bool globals_interface::set<list>(const char* name, const list& val) {
+		return set_var(hash_string(name), value(val));
+	}
 }

@@ -33,6 +33,12 @@ namespace ink::runtime
 		virtual ~runner_interface(){};
 
 #pragma region Interface Methods
+		/**
+		 * Sets seed for PRNG used in runner.
+		 * Else runner is started with the current time as seed.
+		 * @param seed seed to use for PRNG
+		 */
+		virtual void set_rng_seed(uint32_t seed) = 0;
 
 		/**
 		 * Moves the runner to the specified path
@@ -156,7 +162,10 @@ namespace ink::runtime
 		*/
 		virtual void choose(size_t index) = 0;
 
+		/** check if since last choice selection tags have been added */
 		virtual bool has_tags() const = 0;
+		/** return the number of tags accumulated since last choice
+			* order of tags wont change, and new are added at the end */
 		virtual size_t num_tags() const = 0;
 		virtual const char* get_tag(size_t index) const = 0;
 		virtual bool has_line_tags() const = 0;

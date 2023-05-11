@@ -323,6 +323,7 @@ namespace ink::runtime::internal
 
 	runner_impl::runner_impl(const story_impl* data, globals global)
 		: _story(data), _globals(global.cast<globals_impl>()),
+		_rng(time(NULL)),
 		_operations(
 				global.cast<globals_impl>()->strings(),
 				global.cast<globals_impl>()->lists(),
@@ -748,9 +749,6 @@ namespace ink::runtime::internal
 			// If we're on a newline
 			if (_output.ends_with(value_type::newline))
 			{
-				// TODO: REMOVE
-				// return true;
-
 				// Unless we are out of content, we are going to try
 				//  to continue a little further. This is to check for
 				//  glue (which means there is potentially more content
@@ -988,7 +986,16 @@ namespace ink::runtime::internal
 				} else {
 					target = read<uint32_t>();
 				}
-				start_frame<frame_type::function>(target);
+				if (!(flag & CommandFlag::FALLBACK_FUNCTION)) {
+					start_frame<frame_type::function>(target);
+				} else {
+					inkAssert(!_eval.is_empty(), "fallback function but no function call before?");
+					if(_eval.top_value().type() == value_type::ex_fn_not_found) {
+						_eval.pop();
+						inkAssert(target != 0, "Exetrnal function was not binded, and no fallback function provided!");
+						start_frame<frame_type::function>(target);
+					}
+				}
 			}
 			break;
 			case Command::TUNNEL_RETURN:
@@ -1060,18 +1067,11 @@ namespace ink::runtime::internal
 				// find and execute. will automatically push a valid if applicable
 				bool success = _functions.call(functionName, &_eval, numArguments, _globals->strings());
 
-				// If we failed, we need to at least pretend so our state doesn't get fucked
+				// If we failed, notify a potential fallback function
 				if (!success)
 				{
-					// pop arguments
-					for (int i = 0; i < numArguments; i++)
-						_eval.pop();
-
-					// push void
-					_eval.push(value());
+					_eval.push(values::ex_fn_not_found);
 				}
-
-				// TODO: Verify something was found?
 			}
 			break;
 
@@ -1242,7 +1242,7 @@ namespace ink::runtime::internal
 				int sequenceLength = _eval.pop().get<value_type::int32>();
 				int index = _eval.pop().get<value_type::int32>();
 
-				_eval.push(value{}.set<value_type::int32>(_rng.rand(sequenceLength)));
+				_eval.push(value{}.set<value_type::int32>(static_cast<int32_t>(_rng.rand(sequenceLength))));
 			} break;
 			case Command::SEED:
 			{
@@ -1270,6 +1270,7 @@ namespace ink::runtime::internal
 				inkAssert(false, "Unrecognized command!");
 				break;
 			}
+
 		}
 #ifndef INK_ENABLE_UNREAL
 		catch (...)
@@ -1334,13 +1335,13 @@ namespace ink::runtime::internal
 		_container.clear();
 	}
 
-	void runner_impl::mark_strings(string_table& strings) const
+	void runner_impl::mark_used(string_table& strings, list_table& lists) const
 	{
 		// Find strings in output and stacks
-		_output.mark_strings(strings);
-		_stack.mark_strings(strings);
-		// ref_stack has no strings!
-		_eval.mark_strings(strings);
+		_output.mark_used(strings, lists);
+		_stack.mark_used(strings, lists);
+		// ref_stack has no strings and lists!
+		_eval.mark_used(strings, lists);
 
 		// Take into account choice text
 		for (size_t i = 0; i < _choices.size(); i++)
