@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace ink::compiler
 {
@@ -16,5 +17,6 @@ namespace ink::compiler
 		std::vector<std::string> _all_knots;
 		std::vector<std::string> _all_stitches;
 		std::vector<std::string> _all_globals;
+		std::map<std::string, std::vector<std::string>> _knotlines;
 	};
 }

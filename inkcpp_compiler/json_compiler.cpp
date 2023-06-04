@@ -67,7 +67,7 @@ namespace ink::compiler::internal
 				for (auto& iter : knots.items())
 				{
 					_results->_all_knots.push_back(iter.value());
-					// allknots() << iter.value();
+					//allknots() << iter.value();
 					//std::cout << iter.value() << ", ";
 				}
 				//std::cout << std::endl;
@@ -83,6 +83,25 @@ namespace ink::compiler::internal
 					//std::cout << iter.value() << ", ";
 				}
 				//std::cout << std::endl;
+			}
+			
+			auto knotlines = meta["knotlines"];
+			if (knotlines.is_object())
+			{
+				for(auto& meta_iter : knotlines.items())
+				{
+					auto valsArr = meta_iter.value();
+					std::vector<std::string> lines;
+					if(valsArr.is_array())
+					{
+						for(auto& valsIter : valsArr.items())
+						{
+							lines.push_back(valsIter.value());
+						}
+					}
+					_results->_knotlines[meta_iter.key()] = lines;
+					std::cout << meta_iter.key() << " " << lines.size() << " " << std::endl;
+				}
 			}
 		}
 	}
