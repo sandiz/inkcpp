@@ -1147,6 +1147,7 @@ namespace ink::runtime::internal
 					_choice_tags_begin = _tags.size();
 				}
 				_tags.push() = tag;
+        _line_tags.push() = tag;
 			} break;
 
 			// == Choice commands
